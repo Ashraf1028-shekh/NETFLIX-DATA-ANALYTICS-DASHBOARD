@@ -1,13 +1,9 @@
-
-
-import io
 import warnings
 
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import requests
 import seaborn as sns
 import streamlit as st
 
@@ -24,26 +20,6 @@ st.set_page_config(
 )
 
 # ─────────────────────────── Constants ──────────────────────────────────────
-
-FALLBACK_DATASET_URL = (
-    "https://raw.githubusercontent.com/nicholasgasior/next-direction/"
-    "master/netflix_titles.csv"
-)
-
-NETFLIX_COLUMNS = {
-    "show_id": str,
-    "type": str,
-    "title": str,
-    "director": str,
-    "cast": str,
-    "country": str,
-    "date_added": str,
-    "release_year": "Int64",
-    "rating": str,
-    "duration": str,
-    "listed_in": str,
-    "description": str,
-}
 
 PALETTE = [
     "#E50914", "#B81D24", "#F5C518", "#00BCD4", "#4CAF50",
@@ -75,39 +51,6 @@ def fmt_number(n) -> str:
 
 
 # ─────────────────────────── Data Loading ────────────────────────────────────
-
-@st.cache_data(show_spinner=False)
-def load_builtin_netflix() -> pd.DataFrame:
-    """
-    Load the Netflix titles dataset.
-    Order of attempts:
-      1. Kaggle API (if credentials present)
-      2. GitHub raw fallback URL
-    Returns a cleaned DataFrame or empty DataFrame on failure.
-    """
-    # --- attempt 1: Kaggle API ---
-    try:
-        import kaggle  # noqa: PLC0415
-        kaggle.api.authenticate()
-        kaggle.api.dataset_download_files(
-            "shivamb/netflix-shows",
-            path="/tmp/netflix_kaggle",
-            unzip=True,
-            quiet=True,
-        )
-        df = pd.read_csv("/tmp/netflix_kaggle/netflix_titles.csv")
-        return clean_dataframe(df)
-    except Exception:
-        pass
-
-    # --- attempt 2: fallback GitHub mirror ---
-    try:
-        resp = requests.get(FALLBACK_DATASET_URL, timeout=10)
-        resp.raise_for_status()
-        df = pd.read_csv(io.StringIO(resp.text))
-        return clean_dataframe(df)
-    except Exception:
-        return pd.DataFrame()
 
 
 def clean_dataframe(df: pd.DataFrame) -> pd.DataFrame:
@@ -609,48 +552,24 @@ def main() -> None:
 
     # ── Data Source Selection ────────────────────────────────────────────────
     st.sidebar.header("📁 Data Source")
-    data_source = st.sidebar.radio(
-        "Choose a data source",
-        options=["📺 Netflix Dataset (auto-load)", "📂 Upload your own CSV"],
-        key="data_source",
-    )
 
     df_raw = pd.DataFrame()
 
-    if data_source == "📺 Netflix Dataset (auto-load)":
-        with st.spinner("⏳ Loading Netflix dataset…"):
-            df_raw = load_builtin_netflix()
-
-        if df_raw.empty:
-            st.error(
-                "❌ Could not load the Netflix dataset automatically. "
-                "Please upload a CSV file using the sidebar."
-            )
-        else:
+    uploaded = st.sidebar.file_uploader(
+        "Upload a CSV file",
+        type=["csv"],
+        help="Upload any CSV file to explore it interactively.",
+    )
+    if uploaded is not None:
+        with st.spinner("⏳ Reading your file…"):
+            df_raw = load_uploaded_file(uploaded)
+        if not df_raw.empty:
             st.success(
-                f"✅ Netflix dataset loaded successfully — "
+                f"✅ File loaded — "
                 f"**{len(df_raw):,} rows × {df_raw.shape[1]} columns**."
             )
-
     else:
-        uploaded = st.file_uploader(
-            "Upload a CSV file",
-            type=["csv"],
-            help="Upload any CSV file to explore it interactively.",
-        )
-        if uploaded is not None:
-            with st.spinner("⏳ Reading your file…"):
-                df_raw = load_uploaded_file(uploaded)
-            if not df_raw.empty:
-                st.success(
-                    f"✅ File loaded — "
-                    f"**{len(df_raw):,} rows × {df_raw.shape[1]} columns**."
-                )
-        else:
-            st.info(
-                "👈 Upload a CSV file from the sidebar to get started. "
-                "Alternatively, switch to the Netflix dataset above."
-            )
+        st.info("👈 Upload a CSV file from the sidebar to get started.")
 
     if df_raw.empty:
         st.stop()
