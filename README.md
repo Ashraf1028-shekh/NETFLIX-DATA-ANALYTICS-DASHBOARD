@@ -60,17 +60,18 @@ Data analysis practice
 Portfolio project
 Learning Streamlit dashboards
 Understanding real-world datasets
-📌 Future Improvements
-Add recommendation system 🤖
-Deploy on cloud (Streamlit Cloud / AWS)
-Add user authentication
-Real-time data updates
-👨‍💻 Author
 
+📌 Future Improvements
+.Add recommendation system 🤖
+.Deploy on cloud (Streamlit Cloud / AWS)
+.Add user authentication
+.Real-time data updates
+
+👨‍💻 Author
  Shekh Ashraf
 
 B.Tech CSE Student
 Passionate about Data Analytics & AI
-⭐ Support
 
+⭐ Support
 If you like this project, give it a ⭐ on GitHub!
