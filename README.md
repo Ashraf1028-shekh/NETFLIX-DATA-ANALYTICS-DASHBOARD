@@ -30,7 +30,7 @@ Matplotlib / Plotly
  ┣ 📂 assets (images/output if any)
 ⚙️ Installation & Setup
 1. Clone the repository
-git clone https://github.com/your-username/netflix-dashboard.git
+git clone https://github.com/Ashraf1028-shekh/NETFLIX-DATA-ANALYTICS-DASHBOARD.git
 cd netflix-dashboard
 2. Install dependencies
 pip install -r requirements.txt
